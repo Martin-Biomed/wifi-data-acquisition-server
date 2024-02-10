@@ -11,6 +11,7 @@
     This example shows how to scan for available set of APs.
 */
 #include <string.h>
+#include <math.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
@@ -22,7 +23,11 @@
 // This library allows the code to register certain handlers (code that executes in response to certain events).
 // Using this library allows the program execute pre-defined snippets of code when states change.
 #include "esp_event.h"
+
 #include "nvs_flash.h"
+
+// Custom Functions
+#include "misc_funcs/misc_funcs.h"
 
 #define DEFAULT_SCAN_LIST_SIZE 20
 
@@ -189,7 +194,7 @@ static void wifi_scan(void)
     uint16_t ap_count = 0;
     memset(ap_info, 0, sizeof(ap_info));
 
-    // The Wi-Fi mode is set to pure SoftAP. Theoretically, we can use SoftAP + station mode (WIFI_MODE_APSTA)
+    // The Wi-Fi mode is set to Station mode. Theoretically, we can use SoftAP + station mode (WIFI_MODE_APSTA)
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     // We turn ON promiscuous mode to ensure all Ethernet frames are considered in the scan
     ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
@@ -201,7 +206,8 @@ static void wifi_scan(void)
 
     // We can override certain WiFi scan configuration settings and leave the rest as defaults:
     wifi_scan_config_t scan_config = {
-        .scan_type = WIFI_SCAN_TYPE_PASSIVE
+        .scan_type = WIFI_SCAN_TYPE_PASSIVE,
+        .show_hidden = true
     };
     // The block argument is set to "true", as we want the scan to continue after it finds an AP
     esp_wifi_scan_start(&scan_config, true);
@@ -214,12 +220,33 @@ static void wifi_scan(void)
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
     ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
 
+    int8_t selected_tx_power = 0;
+    // Outputs the Max Transmission Power supported by ESP32 (See function manual).
+    ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&selected_tx_power));
+    ESP_LOGI(TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
+
+    // The length of a MAC address is 6 Hex Numbers
+    int mac_length = 6;
+    // Every Hex number in a MAC Address can be represented by 2 Hex digits
+    int size_of_hex_num = 2;
+
+    // The (mac_buffer_size) is defined in "misc_funcs.h"
+    char* mac_address = (char *)malloc((mac_buffer_size) * sizeof(char));
+
     // Prints the info for all the APs stored in "ap_info"
     for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
+
+        memset(mac_address, 0, mac_buffer_size);
+        mac_address = get_mac_address(ap_info[i].bssid, mac_length, size_of_hex_num, TAG);
+
+        // Note: Typically, a wireless AP will support two separate MAC addresses (STA and AP addresses)
+        // This MAC Address Corresponds to the SoftAP interface of the wireless AP.
+        ESP_LOGI(TAG, "MAC (Station): \t%s", mac_address);
+        
         // SSID = Service Set Identifier (1 for each AP)
-        ESP_LOGI(TAG, "SSID \t\t%s", ap_info[i].ssid);
+        ESP_LOGI(TAG, "SSID: \t\t%s", ap_info[i].ssid);
         // RSSI = Received Signal Strength Indicator [dBm]
-        ESP_LOGI(TAG, "RSSI \t\t%d dBm", ap_info[i].rssi);
+        ESP_LOGI(TAG, "RSSI: \t\t%d dBm", ap_info[i].rssi);
         // Type of authentication used by the AP
         print_auth_mode(ap_info[i].authmode);
         if (ap_info[i].authmode != WIFI_AUTH_WEP) {
@@ -227,8 +254,13 @@ static void wifi_scan(void)
         }
         // ESP32 chips can only operate in the 2.4GHz (801.11 b/g/n) network.
         // There are up to 13 bands that this network can operate on (band = specific centre frequency)
-        ESP_LOGI(TAG, "Channel \t\t%d\n", ap_info[i].primary);
+        ESP_LOGI(TAG, "Channel: \t%d\n", ap_info[i].primary);
+    
+        // We check if the AP supports Fine Timing Measurement (FTM) responses
+        //ESP_LOGI(TAG, "FTM Support Status: \t%s\n", ap_info[i].ftm_responder ? "True" : "False");
     }
+
+    free(mac_address);
 
 }
 
