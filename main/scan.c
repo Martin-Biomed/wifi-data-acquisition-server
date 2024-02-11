@@ -150,55 +150,15 @@ static void print_cipher_type(int pairwise_cipher, int group_cipher)
 /* Initialize Wi-Fi as sta and set scan method */
 static void wifi_scan(void)
 {
-    // The ESP_ERROR_CHECK function is included as part of the "esp_common" libraries 
-    // that automatically get imported into your project.
-    // The ESP_ERROR_CHECK function is used to check the status of another function after you execute it
-
-    // ESP-NETIF Library: This library abstracts the TCP/IP Stack functionality, which allows applications
-    // to choose the IP stack to use via APIs (thread-safe).
-
-    // Refer to: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_netif.html
-
-    ESP_ERROR_CHECK(esp_netif_init());
-
-    // This function is linked to the ESP-EVENT library.
-    // Event Loops: An event loop is the bridge between Events and Event Handlers.
-    //              Events are published to the loop using the APIs from the library and
-    //              are routed to the appropriate Handler by the loop.
-
-    // Refer to: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/esp_event.html
-
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    // Using the ESP-NETIF library, we start by creating creating a SoftAP for the ESP32 device.
-
-    // Software Enabled Access Point (SoftAP): These access points enable a device to become 
-    // a wireless access point, even if they haven't been specifically configured for it.
-
-    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
-    assert(sta_netif);
-
-    // The ESP-WIFI library provides a macro that defines the default parameters of the wifi config.
-    // The default values provided by WIFI_INIT_CONFIG_DEFAULT should rarely be changed for nomral Wi-Fi utility.
-
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
     // The ESP-WIFI library provides the pre-defined (wifi_ap_record_t) structure.
     // This structure stores the most common wireless AP characteristics that we care about.
 
-    // The "ap_info" structure contains a number of (wifi_ap_record_t) structures inside, one per detected AP.
+    // The "ap_info" structure contains a number of (wifi_ap_record_t) structures inside, one struct per detected AP.
     // By using memset, we provide a pointer reference that our program can use to refer to "ap_info".
     uint16_t number = DEFAULT_SCAN_LIST_SIZE;
     wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
     uint16_t ap_count = 0;
     memset(ap_info, 0, sizeof(ap_info));
-
-    // The Wi-Fi mode is set to Station mode. Theoretically, we can use SoftAP + station mode (WIFI_MODE_APSTA)
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    // We turn ON promiscuous mode to ensure all Ethernet frames are considered in the scan
-    ESP_ERROR_CHECK(esp_wifi_set_promiscuous(true));
-    ESP_ERROR_CHECK(esp_wifi_start());
 
     // Starts a scan of all available APs.
     // The function is using NULL for the configuration settings, which calls the following default options:
@@ -219,9 +179,9 @@ static void wifi_scan(void)
     // Outputs the number of APs found in the last scan
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
     ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
-
-    int8_t selected_tx_power = 0;
+  
     // Outputs the Max Transmission Power supported by ESP32 (See function manual).
+    int8_t selected_tx_power = 0;
     ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&selected_tx_power));
     ESP_LOGI(TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
 
@@ -274,5 +234,6 @@ void app_main(void)
     }
     ESP_ERROR_CHECK( ret );
 
+    configure_esp32_wifi();
     wifi_scan();
 }

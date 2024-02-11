@@ -5,6 +5,8 @@
 
 static const int mac_buffer_size = 100;
 
+void configure_esp32_wifi(void);
+
 // This generic function returns a (char) pointer of known length (all characters are reversed)
 char* reverse_char_pointer(char* pointer, int len);
 

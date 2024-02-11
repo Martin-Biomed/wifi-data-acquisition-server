@@ -1,4 +1,9 @@
 
+#include <stdint.h>
+
+#ifndef WIFI_DISTANCE_CALCS_H
+#define MWIFI_DISTANCE_CALCS_H
+
 
 // This function calculates the Free Space Path Loss (FSPL)
 // Refer to: https://www.electronics-notes.com/articles/antennas-propagation/propagation-overview/free-space-path-loss.php
@@ -14,4 +19,9 @@
 // The max transmit power for 2.4GHz tends to be: 12dBm (phones) - 20dBm (dedicated APs)
 // Refer to: https://metis.fi/en/2017/10/txpower/
 
-float fspl(float Ptx, )
+// Phones being used as Wi-Fi Hostpots are not picked up as wireless APs by the ESP32, so we assume the transmit power is always (20dB).
+
+float fspl(int RSSI, )
+
+
+#endif
