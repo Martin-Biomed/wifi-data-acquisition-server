@@ -1,91 +1,41 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- |
 
-# Wi-Fi Scan Example
+# Set-up Steps for ESP-IDF
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+## Intro
+ESP-IDF is the software development environment (and framework) created by Espressif to 
+interface with the ESP32-S2 chip developed by Espressif. 
 
-This example shows how to scan for available set of APs.
+ESP-IDF projects are built using CMake. Each project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
 
-## How to use example
+## ESP-IDF Package Location
+The ESP-IDF files downloaded through VSCode are stored in the "v5.1.2" folder.
 
-Before project configuration and build, be sure to set the correct chip target using `idf.py set-target <chip_name>`.
+Note: To build using the VSCode extension, ensure that the "CMakeLists.txt" file is pointing to the location of the "v5.1.2" folder.
 
-### Hardware Required
+Project Locations: Projects created using ESP-IDF create their own folder structure. I have chosen to save the
+projects at the same directory level as the "v5.1.2" folder.
 
-* A development board with ESP32/ESP32-S2/ESP32-C3 SoC (e.g., ESP32-DevKitC, ESP-WROVER-KIT, etc.).
-* A USB cable for Power supply and programming.
+## How to use ESP-IDF with VSCode
 
-### Configure the project
+The following steps document what was done to configure the development environment in VS Code.
+VS Code is only used for development purposes, project builds are done in the associated Docker Container.
 
-Open the project configuration menu (`idf.py menuconfig`).
+1. Install as per: https://github.com/espressif/vscode-esp-idf-extension/blob/master/docs/tutorial/install.md
 
-In the `Example Configuration` menu:
+To create new projects:
 
-* Set the Example configuration.
-    * Use `Max size of scan list` to set the maximum nunber of access points in the list.
+1. Navigate to the VSCode Extension Pane on the LHS of the screen. Select the (ESP-IDF: Explorer) icon
+2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Commands
+3. Select "New Project Wizard" and fill out the options as appropriate.
 
-### Build and Flash
+Note: All libraries in the "example" projects are contained in the "v5.1.2" folder, these default libraries are not part of the individual project.
 
-Build the project and flash it to the board, then run the monitor tool to view the serial output:
+To compile and build the projects:
 
-Run `idf.py -p PORT flash monitor` to build, flash and monitor the project.
-
-(To exit the serial monitor, type ``Ctrl-]``.)
-
-See the Getting Started Guide for all the steps to configure and use the ESP-IDF to build projects.
-
-* [ESP-IDF Getting Started Guide on ESP32](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html)
-* [ESP-IDF Getting Started Guide on ESP32-S2](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html)
-* [ESP-IDF Getting Started Guide on ESP32-C3](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html)
-
-## Example Output
-
-As you run the example, you will see the following log:
-
-```
-I (443) wifi:wifi firmware version: 6bff005
-I (443) wifi:wifi certification version: v7.0
-I (443) wifi:config NVS flash: enabled
-I (443) wifi:config nano formating: disabled
-I (453) wifi:Init data frame dynamic rx buffer num: 32
-I (453) wifi:Init management frame dynamic rx buffer num: 32
-I (463) wifi:Init management short buffer num: 32
-I (463) wifi:Init dynamic tx buffer num: 32
-I (473) wifi:Init static tx FG buffer num: 2
-I (473) wifi:Init static rx buffer size: 1600
-I (473) wifi:Init static rx buffer num: 10
-I (483) wifi:Init dynamic rx buffer num: 32
-I (483) wifi_init: rx ba win: 6
-I (493) wifi_init: tcpip mbox: 32
-I (493) wifi_init: udp mbox: 6
-I (493) wifi_init: tcp mbox: 6
-I (503) wifi_init: tcp tx win: 5744
-I (503) wifi_init: tcp rx win: 5744
-I (513) wifi_init: tcp mss: 1440
-I (513) wifi_init: WiFi IRAM OP enabled
-I (513) wifi_init: WiFi RX IRAM OP enabled
-I (533) phy_init: phy_version 300,6e46ba7,Jan 25 2021
-I (683) wifi:set rx active PTI: 0, rx ack PTI: 0, and default PTI: 0
-I (683) wifi:mode : sta (7c:df:a1:40:23:84)
-I (683) wifi:enable tsf
-I (2783) scan: Total APs scanned = 17
-I (2783) scan: SSID 		IoTNetwork
-I (2783) scan: RSSI 		-50
-I (2783) scan: Authmode 	WIFI_AUTH_WPA2_PSK
-I (2783) scan: Pairwise Cipher 	WIFI_CIPHER_TYPE_CCMP
-I (2793) scan: Group Cipher 	WIFI_CIPHER_TYPE_CCMP
-I (2793) scan: Channel 		5
-
-I (2883) scan: SSID 		TP-Link_6872
-I (2883) scan: RSSI 		-70
-I (2883) scan: Authmode 	WIFI_AUTH_WPA_WPA2_PSK
-I (2893) scan: Pairwise Cipher 	WIFI_CIPHER_TYPE_CCMP
-I (2893) scan: Group Cipher 	WIFI_CIPHER_TYPE_CCMP
-I (2903) scan: Channel 		11
-...
-```
-
-## Troubleshooting
-
-For any technical queries, please open an [issue](https://github.com/espressif/esp-idf/issues) on GitHub. We will get back to you soon.
+1. Navigate to VSCode Extension Pane on the LHS of the screen. Select the (ESP-IDF: Explorer) icon
+2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Commands
+3. Choose "Select Serial Port", and use the corresponding COM number for your ESP device.
+4. Choose "Set Espressif Target" and select the ESP-IDF project that you want to load to the ESP32
+5. Select "Build" to prepare your code to be flashed to the ESP32
+6. Select "Flash" to load the software to the ESP32 (ensure UART is selected).
+7. Select "Monitor" to open up the terminal screen to display the serial output from the ESP32.

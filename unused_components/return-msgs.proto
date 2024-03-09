@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+// The Package is only meant to be an identifier for the workspace of this project
+package esp_wifi;
+
+// This message is sent to other apps once an AP has been scanned
+message AP_Scan_Data {
+    optional string mac_address = 1;
+    optional string ssid = 2;
+    optional int32 rssi = 3;
+    optional string auth_mode = 4;
+    optional string pairwise_cipher = 5;
+    optional string group_cipher = 6;
+    optional int32 band = 7; 
+}
