@@ -238,15 +238,6 @@ void wifi_scan(void)
         .scan_type = WIFI_SCAN_TYPE_PASSIVE,
         .show_hidden = true
     };
-
-    /* We only activate the Wi-Fi when it's needed when using BLE communications.
-    if (bluetooth_mode == true){
-        // We stop the FreeRTOS thread for the duration of this function
-        ESP_LOGI(TAG, "About to stop the BLE");
-        nimble_port_freertos_deinit();
-        ESP_ERROR_CHECK(esp_wifi_start());
-    }
-    */
    
     ESP_ERROR_CHECK(esp_wifi_start());
 
@@ -271,7 +262,7 @@ void wifi_scan(void)
     // Every Hex number in a MAC Address can be represented by 2 Hex digits
     int size_of_hex_num = 2;
 
-    // The (mac_buffer_size) is defined in "misc_funcs.h"
+    // The (mac_buffer_size) is defined in "constants.h"
     char* mac_address = (char *)malloc((mac_buffer_size) * sizeof(char));
     char* auth_mode = (char *)malloc((str_buffer) * sizeof(char));
     char* pairwise_cipher_str = (char *)malloc((str_buffer) * sizeof(char));
@@ -295,7 +286,6 @@ void wifi_scan(void)
         ESP_LOGI(TAG, "Authmode: \t%s", auth_mode);
 
         if (ap_info[i].authmode != WIFI_AUTH_WEP) {
-            //print_cipher_type(ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
             pairwise_cipher_str = return_pairwise_cipher(ap_info[i].pairwise_cipher);
             ESP_LOGI(TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
 
@@ -305,9 +295,6 @@ void wifi_scan(void)
         // ESP32 chips can only operate in the 2.4GHz (801.11 b/g/n) network.
         // There are up to 13 bands that this network can operate on (band = specific centre frequency)
         ESP_LOGI(TAG, "Channel: \t%d\n", ap_info[i].primary);
-    
-        // We check if the AP supports Fine Timing Measurement (FTM) responses
-        //ESP_LOGI(TAG, "FTM Support Status: \t%s\n", ap_info[i].ftm_responder ? "True" : "False");
     }
 
     free(mac_address);
@@ -315,21 +302,16 @@ void wifi_scan(void)
     free(pairwise_cipher_str);
     free(group_cipher_str);
 
-    /* We only activate the Wi-Fi when it's needed when using BLE communications.
-    if (bluetooth_mode == true){
-        ESP_LOGI(TAG, "Re-enabling the BLE");
-        ESP_ERROR_CHECK(esp_wifi_stop());
-        // We restart the FreeRTOS thread after this function
-        run_ble_server();
-    }
-    */
    ESP_ERROR_CHECK(esp_wifi_stop());
 
 }
 
-cJSON* wifi_scan_request(void)
+// Part of the necessary initialisation for an (extern) variable
+int num_of_aps = 0;
+
+char** execute_wifi_scan_request(void)
 {
-    ESP_LOGI(TAG, "Started the Wi-Fi Scan");
+    ESP_LOGI(TAG, "Started the Wi-Fi Scan Function");
     // The ESP-WIFI library provides the pre-defined (wifi_ap_record_t) structure.
     // This structure stores the most common wireless AP characteristics that we care about.
     // The "ap_info" structure contains a number of (wifi_ap_record_t) structures inside, one struct per detected AP.
@@ -348,7 +330,19 @@ cJSON* wifi_scan_request(void)
         .show_hidden = true
     };
 
+    // The length of a MAC address is 6 Hex Numbers
+    int mac_length = 6;
+    // Every Hex number in a MAC Address can be represented by 2 Hex digits
+    int size_of_hex_num = 2;
+
+    // The (mac_buffer_size) is defined in "constants.h"
+    char* mac_address_str = (char *)malloc(mac_buffer_size * sizeof(char));
+    char* auth_mode_str = (char *)malloc(str_buffer * sizeof(char));
+    char* pairwise_cipher_str = (char *)malloc(str_buffer * sizeof(char));
+    char* group_cipher_str = (char *)malloc(str_buffer * sizeof(char));
+
     ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_LOGI(TAG, "Called esp_wifi_start()");
 
     // The block argument is set to "true", as we want the scan to continue after it finds an AP
     esp_wifi_scan_start(&scan_config, true);
@@ -360,87 +354,100 @@ cJSON* wifi_scan_request(void)
     // Outputs the number of APs found in the last scan
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
     ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
+
+    // We update the value of num_of_aps (which is used in the ble_setup functions)
+    if (ap_count > DEFAULT_SCAN_LIST_SIZE){num_of_aps = DEFAULT_SCAN_LIST_SIZE;}
+    else{num_of_aps = ap_count;}
+
+    // This function returns an array of "strings", which means we return an array of (char*) pointers.
+    // Tha number of pointers that are included in this string is equal to (DEFAULT_SCAN_LIST_SIZE)
+    char **json_str_arr = (char**)calloc(ap_count, sizeof(char*));
   
     // Outputs the Max Transmission Power supported by ESP32 (See function manual).
     int8_t selected_tx_power = 0;
     ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&selected_tx_power));
     ESP_LOGI(TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
 
-    // The length of a MAC address is 6 Hex Numbers
-    int mac_length = 6;
-    // Every Hex number in a MAC Address can be represented by 2 Hex digits
-    int size_of_hex_num = 2;
-
-    // The (mac_buffer_size) is defined in "misc_funcs.h"
-    char* mac_address = (char *)malloc((mac_buffer_size) * sizeof(char));
-    char* auth_mode = (char *)malloc((str_buffer) * sizeof(char));
-    char* pairwise_cipher_str = (char *)malloc((str_buffer) * sizeof(char));
-    char* group_cipher_str = (char *)malloc((str_buffer) * sizeof(char));
-
-    // We create a JSON array that will be filled with individual JSON objects
-    cJSON *json_arr = cJSON_CreateArray();
-
     // Prints the info for all the APs stored in "ap_info"
-    for (int i = 0; (i < DEFAULT_SCAN_LIST_SIZE) && (i < ap_count); i++) {
+    for (int i = 0; (i < num_of_aps); i++) {
 
         // We have to add the individual JSON objects to the array
+        ESP_LOGI(TAG, "Creating new CJSON object for one of the detected APs");
         cJSON *json_obj = cJSON_CreateObject();
+
+        json_str_arr[i] = (char *)calloc(esp32_write_max_length, sizeof(char));
+        //memset(json_str_arr[i], 0, esp32_write_max_length);
         
-        memset(mac_address, 0, mac_buffer_size);
-        mac_address = get_mac_address(ap_info[i].bssid, mac_length, size_of_hex_num, TAG);
+        memset(mac_address_str, 0, mac_buffer_size);
+        mac_address_str = get_mac_address(ap_info[i].bssid, mac_length, size_of_hex_num, TAG);
 
         // Note: Typically, a wireless AP will support two separate MAC addresses (STA and AP addresses)
         // This MAC Address Corresponds to the SoftAP interface of the wireless AP.
-        ESP_LOGI(TAG, "MAC (Station): \t%s", mac_address);
-        cJSON_AddStringToObject(json_obj, "mac", mac_address);     
+        ESP_LOGI(TAG, "MAC ADDR: \t%s", mac_address_str);
+        cJSON_AddStringToObject(json_obj, "mac", mac_address_str);     
         // SSID = Service Set Identifier (1 for each AP)
-        ESP_LOGI(TAG, "SSID: \t\t%s", ap_info[i].ssid);
-        cJSON_AddItemToObject(json_obj, "ssid", ap_info[i].ssid);  
+        char* ssid_str = (char*)(ap_info[i].ssid);
+        ESP_LOGI(TAG, "SSID: \t%s", ssid_str);
+        cJSON_AddStringToObject(json_obj, "ssid", ssid_str);
         // RSSI = Received Signal Strength Indicator [dBm]
-        ESP_LOGI(TAG, "RSSI: \t\t%d dBm", ap_info[i].rssi);
+        ESP_LOGI(TAG, "RSSI: \t%d dBm", ap_info[i].rssi);
         cJSON_AddNumberToObject(json_obj, "rssi", ap_info[i].rssi);
         // Type of authentication used by the AP
-        auth_mode = return_auth_mode(ap_info[i].authmode);
-        ESP_LOGI(TAG, "Authmode: \t%s", auth_mode);
-        cJSON_AddStringToObject(json_obj, "auth_mode", auth_mode);  
+        auth_mode_str = return_auth_mode(ap_info[i].authmode);
+        ESP_LOGI(TAG, "Authmode: \t%s", auth_mode_str);
+        cJSON_AddNumberToObject(json_obj, "auth_mode", ap_info[i].authmode);  
 
+        // The WEP wi-fi authentication shouldn't be using pairwise or group ciphers
         if (ap_info[i].authmode != WIFI_AUTH_WEP) {
-            //print_cipher_type(ap_info[i].pairwise_cipher, ap_info[i].group_cipher);
+   
             pairwise_cipher_str = return_pairwise_cipher(ap_info[i].pairwise_cipher);
             ESP_LOGI(TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
-            cJSON_AddStringToObject(json_obj, "pair_cipher", pairwise_cipher_str);  
+            cJSON_AddNumberToObject(json_obj, "pair_cipher", ap_info[i].pairwise_cipher);  
 
             group_cipher_str = return_group_cipher(ap_info[i].group_cipher);
-            ESP_LOGI(TAG, "Group Cipher: \t%s", group_cipher_str);
-            cJSON_AddStringToObject(json_obj, "group_cipher", group_cipher_str);
+            ESP_LOGI(TAG, "Group Cipher: %s", group_cipher_str);
+            cJSON_AddNumberToObject(json_obj, "group_cipher", ap_info[i].group_cipher);
         }
 
         else {
-            cJSON_AddStringToObject(json_obj, "pair_cipher", "(WEP = N/A)");  
-            cJSON_AddStringToObject(json_obj, "group_cipher", "(WEP = N/A)");
+            // These numbers will be mapped out (on the remote client side) to indicate a lack of ciphers
+            cJSON_AddNumberToObject(json_obj, "pair_cipher", 99);  
+            cJSON_AddNumberToObject(json_obj, "group_cipher", 99);
         }
 
-        // ESP32 chips can only operate in the 2.4GHz (801.11 b/g/n) network.
+        // ESP32 wi-fi chips can only operate in the 2.4GHz (801.11 b/g/n) network.
         // There are up to 13 bands that this network can operate on (band = specific centre frequency)
         ESP_LOGI(TAG, "Channel: \t%d\n", ap_info[i].primary);
         cJSON_AddNumberToObject(json_obj, "channel", ap_info[i].primary);
-    
-        // We check if the AP supports Fine Timing Measurement (FTM) responses
-        //ESP_LOGI(TAG, "FTM Support Status: \t%s\n", ap_info[i].ftm_responder ? "True" : "False");
 
-        cJSON_AddItemToArray(json_arr, json_obj);
+        // Adding the next JSON string to the (char*) pointer array that we return from this function
+        // We only want to copy the full JSON str to the output array if the SSID is under the allowable (char) limit
+        if (strlen(cJSON_Print(json_obj)) < esp32_write_max_length){
+            json_str_arr[i] = cJSON_Print(json_obj);
+            ESP_LOGI(TAG, "Created JSON str: %s", json_str_arr[i]);
+            ESP_LOGI(TAG, "Length of JSON str is: %d", strlen(json_str_arr[i]));
+        }
 
         // We can delete the JSON object to re-create it next iteration of the loop
+        ESP_LOGI(TAG, "Deleting the CJSON object for one of the detected APs\n");
+        //free(json_str);
         cJSON_Delete(json_obj);      
     }
 
-    free(mac_address);
-    free(auth_mode);
+    free(mac_address_str);
+    free(auth_mode_str);
     free(pairwise_cipher_str);
     free(group_cipher_str);
 
-    // We only activate the Wi-Fi when it's needed when using BLE communications.
+    // We only activate the Wi-Fi when it's needed
     ESP_ERROR_CHECK(esp_wifi_stop());
 
-    return json_arr;
+    return json_str_arr;
 }
+
+// This function stores the number of APs detected in the last wi-fi scan
+int get_number_of_aps(void){
+    return num_of_aps;
+}
+
+

@@ -12,7 +12,7 @@ struct entry cmd_dict[] =
     {0, 0}
 };
 
-// This generic function uses the specific cmd_dict to determine an equivalent (int) for the received str
+// This generic function uses the user-defined cmd_dict to determine an equivalent (int) for the received str
 int number_for_key(char *key)
 {
     int i = 0;
@@ -26,19 +26,30 @@ int number_for_key(char *key)
 }
 
 // This command take in an (int) which represents a cmd that is received via GATT. 
-// The mapping of the cmd string and the (int) is defined by the cmd_dict
+// The mapping of the cmd string and the (int) is defined by the cmd_dict.
+// Based on the received (int), one of the callable functions from the ESP32 will execute.
 void execute_user_cmd(int input_cmd){
     ESP_LOGI(SERVICE_ROUTER_TAG, "Received Command ID is: %d", input_cmd);
-    if (input_cmd == wifi_scan_cmd_id){
-        wifi_scan();
+    switch(input_cmd){
+        case wifi_scan_cmd_id:
+            execute_wifi_scan();
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Completed the wifi_scan");
+            break;
+        default:
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Unknown cmd with ID %d received", input_cmd);
+            break;
     }
 }
 
-// This command returns a string that originates from a JSON object
-void return_wifi_scan_res(void){  
-    cJSON *json_arr = wifi_scan_request();
 
-    char* json_str = cJSON_Print(json_arr);
-    cJSON_Delete(json_arr); 
-    ESP_LOGI(BLE_TAG, "Preparing to send JSON Str: %s", json_str);
+// This function executes a wi-fi scan and prepares the results for publishing over GATT
+void execute_wifi_scan(void){  
+
+    char **wifi_scan_str_arr = execute_wifi_scan_request();
+    int ap_num = get_number_of_aps();
+    send_wifi_scan_request(wifi_scan_str_arr, ap_num);
+
+    ESP_LOGI(SERVICE_ROUTER_TAG, "Deleting the wifi_scan array of (char*)");
+    free(wifi_scan_str_arr);
+
 }

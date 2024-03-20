@@ -6,6 +6,7 @@ idf_component_register(SRCS
                         "wifi_setup/wifi_setup.c"
                         "ble_setup/ble_setup.c"
                         "service_router/service_router.c"
+                        "utf8/utf8.c"
                     INCLUDE_DIRS 
                         "C:/Users/marti/Documents/git_repos/ESP-IDF/v5.1.2"
                         "${CMAKE_CURRENT_SOURCE_DIR}/wifi_scan"
@@ -14,4 +15,5 @@ idf_component_register(SRCS
                         "${CMAKE_CURRENT_SOURCE_DIR}/ble_setup"
                         "${CMAKE_CURRENT_SOURCE_DIR}/constants"
                         "${CMAKE_CURRENT_SOURCE_DIR}/service_router"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/utf8"
                     )

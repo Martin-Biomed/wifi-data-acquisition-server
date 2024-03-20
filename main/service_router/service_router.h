@@ -8,10 +8,13 @@
 
 static const int wifi_scan_cmd_id = 10;
 
+// This function uses the user-defined cmd_dict to determine an equivalent (int) for the received str
 int number_for_key(char *key);
 
+// Based on the received (int), one of the callable functions from the ESP32 will execute.
 void execute_user_cmd(int input_cmd);
 
-void return_wifi_scan_res(void);
+// This function executes a wi-fi scan and prepares the results for publishing over GATT
+void execute_wifi_scan(void);
 
 #endif
