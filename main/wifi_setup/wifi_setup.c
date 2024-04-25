@@ -42,7 +42,7 @@ void configure_esp32_wifi_ap(void){
         }    
     };
 
-    // If the user decies to not have a password, the program will immediately assume an open Wi-Fi network
+    // If the user decides to not have a password, the program will immediately assume an open Wi-Fi network for the AP
     if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }

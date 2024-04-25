@@ -10,7 +10,7 @@
 //////////////////////////////// wifi_scan //////////////////////////////////////
 
 // The max. number of APs that we scan with our ESP32
-#define DEFAULT_SCAN_LIST_SIZE 4
+#define DEFAULT_SCAN_LIST_SIZE 10
 
 // Used for return and intermediary strings
 static const int mac_buffer_size = 100;
@@ -21,6 +21,8 @@ static const char *TAG = "wifi_scan";
 
 ////////////////////////////// BLE ///////////////////////////////////////////
 
+static const char *ble_gap_server_name = "ESP32-BLE-Server";
+
 // BLE Functions Tag
 static const bool bluetooth_mode = true;
 static const char *BLE_TAG = "BLE state";
@@ -30,12 +32,22 @@ static const char *BLE_TAG = "BLE state";
 static const int esp32_write_max_length = 200;
 
 // Value set by Remote Client (Limits Received BLE messages to this defined size)
-#define received_value_max_length 50
+#define received_value_max_length 100
 
 ////////////////////////////////// Service Router ///////////////////////////////////
 
 // Events related to the Service Router
 static const char *SERVICE_ROUTER_TAG = "Service Router";
+
+
+//////////////////////////// Wi-Fi AP Connection (STA) ////////////////////////////////
+
+static const char *WIFI_CONN_TAG = "wifi_connect";
+
+#define MAX_SSID_LEN 50
+#define MAX_PWD_LEN 50
+
+#define MAX_WIFI_CONN_RETRIES 3
 
 //////////////////////////// wifi station AP mode (unused) /////////////////////////
 
