@@ -220,7 +220,7 @@ char* return_group_cipher(int group_cipher)
 // Initialize Wi-Fi as sta and set scan method. This function should only be used for debugging the ESP32 itself.
 void wifi_scan(void)
 {
-    ESP_LOGI(TAG, "Started the Wi-Fi Scan");
+    ESP_LOGI(WIFI_SCAN_TAG, "Started the Wi-Fi Scan");
     // The ESP-WIFI library provides the pre-defined (wifi_ap_record_t) structure.
     // This structure stores the most common wireless AP characteristics that we care about.
     // The "ap_info" structure contains a number of (wifi_ap_record_t) structures inside, one struct per detected AP.
@@ -250,12 +250,12 @@ void wifi_scan(void)
 
     // Outputs the number of APs found in the last scan
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
-    ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
+    ESP_LOGI(WIFI_SCAN_TAG, "Total APs scanned = %u", ap_count);
   
     // Outputs the Max Transmission Power supported by ESP32 (See function manual).
     int8_t selected_tx_power = 0;
     ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&selected_tx_power));
-    ESP_LOGI(TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
+    ESP_LOGI(WIFI_SCAN_TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
 
     // The length of a MAC address is 6 Hex Numbers
     int mac_length = 6;
@@ -276,25 +276,25 @@ void wifi_scan(void)
 
         // Note: Typically, a wireless AP will support two separate MAC addresses (STA and AP addresses)
         // This MAC Address Corresponds to the SoftAP interface of the wireless AP.
-        ESP_LOGI(TAG, "MAC (Station): \t%s", mac_address);     
+        ESP_LOGI(WIFI_SCAN_TAG, "MAC (Station): \t%s", mac_address);     
         // SSID = Service Set Identifier (1 for each AP)
-        ESP_LOGI(TAG, "SSID: \t\t%s", ap_info[i].ssid);
+        ESP_LOGI(WIFI_SCAN_TAG, "SSID: \t\t%s", ap_info[i].ssid);
         // RSSI = Received Signal Strength Indicator [dBm]
-        ESP_LOGI(TAG, "RSSI: \t\t%d dBm", ap_info[i].rssi);
+        ESP_LOGI(WIFI_SCAN_TAG, "RSSI: \t\t%d dBm", ap_info[i].rssi);
         // Type of authentication used by the AP
         auth_mode = return_auth_mode(ap_info[i].authmode);
-        ESP_LOGI(TAG, "Authmode: \t%s", auth_mode);
+        ESP_LOGI(WIFI_SCAN_TAG, "Authmode: \t%s", auth_mode);
 
         if (ap_info[i].authmode != WIFI_AUTH_WEP) {
             pairwise_cipher_str = return_pairwise_cipher(ap_info[i].pairwise_cipher);
-            ESP_LOGI(TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
+            ESP_LOGI(WIFI_SCAN_TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
 
             group_cipher_str = return_group_cipher(ap_info[i].group_cipher);
-            ESP_LOGI(TAG, "Group Cipher: \t%s", group_cipher_str);
+            ESP_LOGI(WIFI_SCAN_TAG, "Group Cipher: \t%s", group_cipher_str);
         }
         // ESP32 chips can only operate in the 2.4GHz (801.11 b/g/n) network.
         // There are up to 13 bands that this network can operate on (band = specific centre frequency)
-        ESP_LOGI(TAG, "Channel: \t%d\n", ap_info[i].primary);
+        ESP_LOGI(WIFI_SCAN_TAG, "Channel: \t%d\n", ap_info[i].primary);
     }
 
     free(mac_address);
@@ -311,7 +311,7 @@ int num_of_aps = 0;
 
 char** execute_wifi_scan_request(void)
 {
-    ESP_LOGI(TAG, "Started the Wi-Fi Scan Function");
+    ESP_LOGI(WIFI_SCAN_TAG, "Started the Wi-Fi Scan Function");
     // The ESP-WIFI library provides the pre-defined (wifi_ap_record_t) structure.
     // This structure stores the most common wireless AP characteristics that we care about.
     // The "ap_info" structure contains a number of (wifi_ap_record_t) structures inside, one struct per detected AP.
@@ -342,7 +342,7 @@ char** execute_wifi_scan_request(void)
     char* group_cipher_str = (char *)malloc(str_buffer * sizeof(char));
 
     ESP_ERROR_CHECK(esp_wifi_start());
-    ESP_LOGI(TAG, "Called esp_wifi_start()");
+    ESP_LOGI(WIFI_SCAN_TAG, "Called esp_wifi_start()");
 
     // The block argument is set to "true", as we want the scan to continue after it finds an AP
     esp_wifi_scan_start(&scan_config, true);
@@ -353,7 +353,7 @@ char** execute_wifi_scan_request(void)
 
     // Outputs the number of APs found in the last scan
     ESP_ERROR_CHECK(esp_wifi_scan_get_ap_num(&ap_count));
-    ESP_LOGI(TAG, "Total APs scanned = %u", ap_count);
+    ESP_LOGI(WIFI_SCAN_TAG, "Total APs scanned = %u", ap_count);
 
     // We update the value of num_of_aps (which is used in the ble_setup functions)
     if (ap_count > DEFAULT_SCAN_LIST_SIZE){num_of_aps = DEFAULT_SCAN_LIST_SIZE;}
@@ -366,13 +366,13 @@ char** execute_wifi_scan_request(void)
     // Outputs the Max Transmission Power supported by ESP32 (See function manual).
     int8_t selected_tx_power = 0;
     ESP_ERROR_CHECK(esp_wifi_get_max_tx_power(&selected_tx_power));
-    ESP_LOGI(TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
+    ESP_LOGI(WIFI_SCAN_TAG, "Max Supported Tx Power: \t%d dBm \n\n", (int8_t)round(selected_tx_power*0.25));
 
     // Prints the info for all the APs stored in "ap_info"
     for (int i = 0; (i < num_of_aps); i++) {
 
         // We have to add the individual JSON objects to the array
-        ESP_LOGI(TAG, "Creating new CJSON object for one of the detected APs");
+        ESP_LOGI(WIFI_SCAN_TAG, "Creating new CJSON object for one of the detected APs");
         cJSON *json_obj = cJSON_CreateObject();
 
         json_str_arr[i] = (char *)calloc(esp32_write_max_length, sizeof(char));
@@ -383,29 +383,29 @@ char** execute_wifi_scan_request(void)
 
         // Note: Typically, a wireless AP will support two separate MAC addresses (STA and AP addresses)
         // This MAC Address Corresponds to the SoftAP interface of the wireless AP.
-        ESP_LOGI(TAG, "MAC ADDR: \t%s", mac_address_str);
+        ESP_LOGI(WIFI_SCAN_TAG, "MAC ADDR: \t%s", mac_address_str);
         cJSON_AddStringToObject(json_obj, "mac", mac_address_str);     
         // SSID = Service Set Identifier (1 for each AP)
         char* ssid_str = (char*)(ap_info[i].ssid);
-        ESP_LOGI(TAG, "SSID: \t%s", ssid_str);
+        ESP_LOGI(WIFI_SCAN_TAG, "SSID: \t%s", ssid_str);
         cJSON_AddStringToObject(json_obj, "ssid", ssid_str);
         // RSSI = Received Signal Strength Indicator [dBm]
-        ESP_LOGI(TAG, "RSSI: \t%d dBm", ap_info[i].rssi);
+        ESP_LOGI(WIFI_SCAN_TAG, "RSSI: \t%d dBm", ap_info[i].rssi);
         cJSON_AddNumberToObject(json_obj, "rssi", ap_info[i].rssi);
         // Type of authentication used by the AP
         auth_mode_str = return_auth_mode(ap_info[i].authmode);
-        ESP_LOGI(TAG, "Authmode: \t%s", auth_mode_str);
+        ESP_LOGI(WIFI_SCAN_TAG, "Authmode: \t%s", auth_mode_str);
         cJSON_AddNumberToObject(json_obj, "auth_mode", ap_info[i].authmode);  
 
         // The WEP wi-fi authentication shouldn't be using pairwise or group ciphers
         if (ap_info[i].authmode != WIFI_AUTH_WEP) {
    
             pairwise_cipher_str = return_pairwise_cipher(ap_info[i].pairwise_cipher);
-            ESP_LOGI(TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
+            ESP_LOGI(WIFI_SCAN_TAG, "Pairwise Cipher: %s", pairwise_cipher_str);
             cJSON_AddNumberToObject(json_obj, "pair_cipher", ap_info[i].pairwise_cipher);  
 
             group_cipher_str = return_group_cipher(ap_info[i].group_cipher);
-            ESP_LOGI(TAG, "Group Cipher: %s", group_cipher_str);
+            ESP_LOGI(WIFI_SCAN_TAG, "Group Cipher: %s", group_cipher_str);
             cJSON_AddNumberToObject(json_obj, "group_cipher", ap_info[i].group_cipher);
         }
 
@@ -417,19 +417,19 @@ char** execute_wifi_scan_request(void)
 
         // ESP32 wi-fi chips can only operate in the 2.4GHz (801.11 b/g/n) network.
         // There are up to 13 bands that this network can operate on (band = specific centre frequency)
-        ESP_LOGI(TAG, "Channel: \t%d\n", ap_info[i].primary);
+        ESP_LOGI(WIFI_SCAN_TAG, "Channel: \t%d\n", ap_info[i].primary);
         cJSON_AddNumberToObject(json_obj, "channel", ap_info[i].primary);
 
         // Adding the next JSON string to the (char*) pointer array that we return from this function
         // We only want to copy the full JSON str to the output array if the SSID is under the allowable (char) limit
         if (strlen(cJSON_Print(json_obj)) < esp32_write_max_length){
             json_str_arr[i] = cJSON_Print(json_obj);
-            ESP_LOGI(TAG, "Created JSON str: %s", json_str_arr[i]);
-            ESP_LOGI(TAG, "Length of JSON str is: %d", strlen(json_str_arr[i]));
+            ESP_LOGI(WIFI_SCAN_TAG, "Created JSON str: %s", json_str_arr[i]);
+            ESP_LOGI(WIFI_SCAN_TAG, "Length of JSON str is: %d", strlen(json_str_arr[i]));
         }
 
         // We can delete the JSON object to re-create it next iteration of the loop
-        ESP_LOGI(TAG, "Deleting the CJSON object for one of the detected APs\n");
+        ESP_LOGI(WIFI_SCAN_TAG, "Deleting the CJSON object for one of the detected APs\n");
         //free(json_str);
         cJSON_Delete(json_obj);      
     }

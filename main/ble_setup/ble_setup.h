@@ -90,6 +90,8 @@ void send_wifi_scan_request(char** wifi_scan_str_arr, int ap_num);
 // This function has to be in the (ble_setup) module, as it needs access to the (char) arrays to be sent over GATT
 void send_wifi_conn_status(int connection_status);
 
+void send_ping_result(int ping_status, char* host);
+
 // Updates the om_mbuf value with the string(s) that we want to send over the GATT Read characteristic
 int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_gatt_access_ctxt *ctxt);
 

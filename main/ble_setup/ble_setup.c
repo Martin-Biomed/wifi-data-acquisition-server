@@ -89,8 +89,6 @@ static int gatt_svr_chr_access(uint16_t conn_handle, uint16_t attr_handle, struc
     }
 }
 
-
-
 // Array of pointers to other service definitions
 // UUID - Universal Unique Identifier
 static const struct ble_gatt_svc_def gatt_svcs[] = {
@@ -231,25 +229,102 @@ void send_wifi_scan_request(char** wifi_scan_str_arr, int ap_num){
 // This function updates the first array of (chars) in the array of (char) arrays with the status of the connection
 void send_wifi_conn_status(int connection_status){
 
-    // The value of (connection_status) is determined by a successful/failed connection in the "connect_to_wifi_ap" function.
+    cJSON *json_obj = cJSON_CreateObject();
 
+    // The value of (connection_status) is determined by a successful/failed connection in the "connect_to_wifi_ap" function.
     memset(characteristic_value[0], 0, sizeof(characteristic_max_length));
     if (connection_status == 0){
-        strcpy(characteristic_value[0], "Wi-Fi AP is valid, credentials stored for other commands");
-        esp_wifi_disconnect();
-
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", 1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", 1);
+        cJSON_AddNumberToObject(json_obj, "creds_stored", 1);
+        cJSON_AddStringToObject(json_obj, "esp32_ip_addr", get_esp32_ip_str());
+        cJSON_AddStringToObject(json_obj, "esp32_netmask", get_esp32_netmask());
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
     }
     else {
-        strcpy(characteristic_value[0], "Could not connect to Wi-Fi AP, credentials not updated");
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", -1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", -1);
+        cJSON_AddNumberToObject(json_obj, "creds_stored", -1);
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
     }
+
+    cJSON_Delete(json_obj);
     conn_status_changed = 0;
     ESP_LOGI(BLE_TAG, "%s", characteristic_value[0]);
     ESP_LOGI(BLE_TAG, "Connection Status Change during update process: %d", conn_status_changed);
     
     // Once we know the stat of the connection, we reset the state of the ESP32 Wi-Fi to be able to support all Wi-Fi functions again
     disconnect_all_event_handler_instances();
+    esp_wifi_disconnect();
     ESP_ERROR_CHECK(esp_wifi_stop());
 }
+
+
+// This function updates the first array of (chars) in the array of (char) arrays with the status of the ping
+void send_ping_result(int ping_status, char* host){
+
+     cJSON *json_obj = cJSON_CreateObject();
+
+     // The value of (connection_status) is determined by a successful/failed connection in the "connect_to_wifi_ap" function.
+    memset(characteristic_value[0], 0, sizeof(characteristic_max_length));
+    if (ping_status == 0){
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", 1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", 1);
+        cJSON_AddStringToObject(json_obj, "target_host", host);
+        cJSON_AddNumberToObject(json_obj, "ping_success", 1);
+        cJSON_AddStringToObject(json_obj, "target_host_ip", get_host_ip());
+        cJSON_AddNumberToObject(json_obj, "ping_ttl", get_ttl_num());
+        cJSON_AddNumberToObject(json_obj, "ping_seq_num", get_icmp_seq_num());
+        cJSON_AddNumberToObject(json_obj, "ping_elapsed_time_ms", get_elapsed_time_num());
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
+        esp_wifi_disconnect();
+    }
+    else if (ping_status == -1){
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", 1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", 1);
+        cJSON_AddStringToObject(json_obj, "target_host", host);
+        cJSON_AddNumberToObject(json_obj, "ping_success", -1);
+        cJSON_AddStringToObject(json_obj, "target_host_ip", get_host_ip());
+        cJSON_AddStringToObject(json_obj, "more_info", "AP can connect, but ping unsuccessful.");
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
+        esp_wifi_disconnect();
+    }
+    else if (ping_status == -2){
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", -1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", -1);
+        cJSON_AddStringToObject(json_obj, "target_host", host);
+        cJSON_AddNumberToObject(json_obj, "ping_success", -1);
+        cJSON_AddStringToObject(json_obj, "more_info", "Failed to connect to AP with saved creds.");
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
+    }
+    else if (ping_status == -3){
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", -1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", -1);
+        cJSON_AddStringToObject(json_obj, "target_host", host);
+        cJSON_AddNumberToObject(json_obj, "ping_success", -1);
+        cJSON_AddStringToObject(json_obj, "more_info", "No Wi-Fi AP has been previously connected to.");
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
+    }
+    else {
+        cJSON_AddNumberToObject(json_obj, "ap_creds_valid", -1);
+        cJSON_AddNumberToObject(json_obj, "wifi_conn_success", -1);
+        cJSON_AddStringToObject(json_obj, "target_host", host);
+        cJSON_AddNumberToObject(json_obj, "ping_success", -1);
+        cJSON_AddStringToObject(json_obj, "more_info", "Could not connect to AP due to unexpected event");
+        strcpy(characteristic_value[0], cJSON_Print(json_obj));
+    }
+
+    cJSON_Delete(json_obj);
+    conn_status_changed = 0;
+    ESP_LOGI(BLE_TAG, "%s", characteristic_value[0]);
+    ESP_LOGI(BLE_TAG, "Connection Status Change during update process: %d", conn_status_changed);
+    
+    // Once we know the stat of the connection, we reset the state of the ESP32 Wi-Fi to be able to support all Wi-Fi functions again
+    disconnect_all_event_handler_instances();
+    esp_wifi_disconnect();
+    ESP_ERROR_CHECK(esp_wifi_stop());
+}
+
 
 // Updates the om_mbuf value with the string(s) that we want to send over the GATT Read characteristic
 int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_gatt_access_ctxt *ctxt)
@@ -288,6 +363,19 @@ int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_ga
                 conn_status_changed = -1;
             }
             return rc;
+        
+        // Determining the response for a (ping)
+        case ping_cmd_id:
+            ESP_LOGI(BLE_TAG, "Connection Status Change prior to sending message: %d", conn_status_changed);
+
+            // Only send the message over GATT if the string in characteristic value is not blank 
+            ESP_LOGI(BLE_TAG, "Preparing to send MSG: %s", characteristic_value[0]);
+            if (strlen(characteristic_value[0]) > 2){
+                rc = os_mbuf_append(ctxt->om, characteristic_value[0], strlen(characteristic_value[0]));
+                conn_status_changed = -1;
+            }
+            return rc;
+
 
         default:
             ESP_LOGI(BLE_TAG, "Current value of (input_cmd) is: %d\n", input_cmd);

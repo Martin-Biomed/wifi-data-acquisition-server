@@ -9,7 +9,8 @@ struct entry {
 struct entry cmd_dict[] = 
 {
     {"wifi_scan", wifi_scan_cmd_id},
-    {"wifi_conn", wifi_conn_cmd_id}, 
+    {"wifi_conn", wifi_conn_cmd_id},
+    {"ping", ping_cmd_id},  
     {0, 0}
 };
 
@@ -37,12 +38,21 @@ void execute_user_cmd(int input_cmd, cJSON *input_obj){
             execute_wifi_scan();
             ESP_LOGI(SERVICE_ROUTER_TAG, "Completed the wifi_scan");
             break;
+
         // Routing the Wi-Fi AP connection command
         case wifi_conn_cmd_id:
             ESP_LOGI(SERVICE_ROUTER_TAG, "Connecting to selected Wi-Fi network..");
             int conn_setup_state = connect_to_wifi_ap(input_obj);
             ESP_LOGI(SERVICE_ROUTER_TAG, "Completed the Wi-Fi setup process...");
             break;
+
+        // Routing the Wi-Fi ping host command
+        case ping_cmd_id:
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Executing Ping with saved Wi-Fi AP credentials");
+            int ping_setup_state = ping_selected_host(input_obj);
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Completed ping setup process...");
+            break;
+
         default:
             ESP_LOGI(SERVICE_ROUTER_TAG, "Unknown cmd with ID %d received", input_cmd);
             break;

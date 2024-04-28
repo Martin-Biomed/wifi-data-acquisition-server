@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+
+static const char *TAG = "background wifi stack";
+
 //////////////////////////////// wifi_scan //////////////////////////////////////
 
 // The max. number of APs that we scan with our ESP32
@@ -17,7 +20,7 @@ static const int mac_buffer_size = 100;
 static const int str_buffer = 100;
 
 // Wi-Fi Scan Tag
-static const char *TAG = "wifi_scan";
+static const char *WIFI_SCAN_TAG = "wifi_scan";
 
 ////////////////////////////// BLE ///////////////////////////////////////////
 
@@ -44,10 +47,20 @@ static const char *SERVICE_ROUTER_TAG = "Service Router";
 
 static const char *WIFI_CONN_TAG = "wifi_connect";
 
-#define MAX_SSID_LEN 50
+#define MAX_AP_SSID_LEN 50
 #define MAX_PWD_LEN 50
 
 #define MAX_WIFI_CONN_RETRIES 3
+
+//////////////////////////////////////// Ping AP ////////////////////////////////////////
+
+static const char *PING_TAG = "ping";
+
+#define MAX_HOST_LEN 50
+#define PING_INTERVAL 1000
+#define PING_COUNT 1
+#define HOST_IP_MAX_LEN 20
+#define PING_TASK_PRIORITY 1
 
 //////////////////////////// wifi station AP mode (unused) /////////////////////////
 
