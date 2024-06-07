@@ -11,6 +11,7 @@ struct entry cmd_dict[] =
     {"wifi_scan", wifi_scan_cmd_id},
     {"wifi_conn", wifi_conn_cmd_id},
     {"ping", ping_cmd_id},  
+    {"gps_location", gps_location_id}, 
     {0, 0}
 };
 
@@ -52,6 +53,14 @@ void execute_user_cmd(int input_cmd, cJSON *input_obj){
             int ping_setup_state = ping_selected_host(input_obj);
             ESP_LOGI(SERVICE_ROUTER_TAG, "Completed ping setup process...");
             break;
+        
+        case gps_location_id:
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Retrieving Latest known GPS location");
+            send_gps_location();
+            ESP_LOGI(SERVICE_ROUTER_TAG, "Completed GPS Location Retrieval.....");
+            break;
+            // Unlike other commands, there is no need to execute a specific function because the thread is always running
+
 
         default:
             ESP_LOGI(SERVICE_ROUTER_TAG, "Unknown cmd with ID %d received", input_cmd);

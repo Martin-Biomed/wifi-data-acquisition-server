@@ -263,7 +263,7 @@ void send_wifi_conn_status(int connection_status){
 // This function updates the first array of (chars) in the array of (char) arrays with the status of the ping
 void send_ping_result(int ping_status, char* host){
 
-     cJSON *json_obj = cJSON_CreateObject();
+    cJSON *json_obj = cJSON_CreateObject();
 
      // The value of (connection_status) is determined by a successful/failed connection in the "connect_to_wifi_ap" function.
     memset(characteristic_value[0], 0, sizeof(characteristic_max_length));
@@ -325,6 +325,21 @@ void send_ping_result(int ping_status, char* host){
     ESP_ERROR_CHECK(esp_wifi_stop());
 }
 
+// This function updates the value of (characteristic_value[0]) with the static char array defined in the GPS Task scope
+void send_gps_location(void){
+
+    // We need to convert the raw GPS data into a JSON string
+    char* gps_data = get_latest_gps_data();
+    ESP_LOGI(BLE_TAG, "Preparing to send GPS data: %s", gps_data);
+
+    // Create a JSON string with a single key-value pair
+    cJSON *json_obj = cJSON_CreateObject();
+    cJSON_AddStringToObject(json_obj, "gps_position", gps_data);
+
+    memset(characteristic_value[0], 0, sizeof(characteristic_max_length));
+    strcpy(characteristic_value[0], cJSON_Print(json_obj));
+
+}
 
 // Updates the om_mbuf value with the string(s) that we want to send over the GATT Read characteristic
 int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_gatt_access_ctxt *ctxt)
@@ -349,7 +364,6 @@ int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_ga
                     ESP_LOGI(BLE_TAG, "Length of mbuf after append is %d\n", ctxt->om->om_len); 
                 }
             }
-
             return rc;
         
         // Determining the response for a (wifi_conn)
@@ -366,6 +380,17 @@ int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_ga
         
         // Determining the response for a (ping)
         case ping_cmd_id:
+            ESP_LOGI(BLE_TAG, "Connection Status Change prior to sending message: %d", conn_status_changed);
+
+            // Only send the message over GATT if the string in characteristic value is not blank 
+            ESP_LOGI(BLE_TAG, "Preparing to send MSG: %s", characteristic_value[0]);
+            if (strlen(characteristic_value[0]) > 2){
+                rc = os_mbuf_append(ctxt->om, characteristic_value[0], strlen(characteristic_value[0]));
+                conn_status_changed = -1;
+            }
+            return rc;
+        
+        case gps_location_id:
             ESP_LOGI(BLE_TAG, "Connection Status Change prior to sending message: %d", conn_status_changed);
 
             // Only send the message over GATT if the string in characteristic value is not blank 

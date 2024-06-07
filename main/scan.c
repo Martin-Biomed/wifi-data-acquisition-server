@@ -10,7 +10,7 @@
 /*
     This example shows how to scan for available set of APs.
 */
-#include <math.h>
+//#include <math.h>
 #include "esp_wifi.h"
 
 // In this script, we do not change the value of the Master Logging level
@@ -29,6 +29,7 @@
 #include "wifi_setup/wifi_setup.h"
 #include "constants/constants.h"
 #include "ble_setup/ble_setup.h"
+#include "gps_library/gps_library.h"
 
 void app_main(void)
 {
@@ -53,6 +54,12 @@ void app_main(void)
     configure_ble_server();
 
     configure_esp32_wifi();
+
+    // We start running the GPS thread prior to initialising the BLE Server
+    init_uart();
+    
+    // We create a task that is Pinned to Core 0, because Core 1 is allocated for the Wi-Fi and BLE tasks in (menuconfig)
+    xTaskCreatePinnedToCore(gps_task, "gps_task", RX_BUF_SIZE*2, NULL, configMAX_PRIORITIES-1, NULL, 0);
 
     run_ble_server();
 

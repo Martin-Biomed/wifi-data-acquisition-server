@@ -9,6 +9,7 @@ idf_component_register(SRCS
                         "utf8/utf8.c"
                         "wifi_connect/wifi_connect.c"
                         "ping/ping.c"
+                        "gps_library/gps_library.c"
                     INCLUDE_DIRS 
                         "C:/Users/marti/Documents/git_repos/ESP-IDF/v5.1.2"
                         "${CMAKE_CURRENT_SOURCE_DIR}/wifi_scan"
@@ -20,4 +21,5 @@ idf_component_register(SRCS
                         "${CMAKE_CURRENT_SOURCE_DIR}/utf8"
                         "${CMAKE_CURRENT_SOURCE_DIR}/wifi_connect"
                         "${CMAKE_CURRENT_SOURCE_DIR}/ping"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/gps_library"
                     )

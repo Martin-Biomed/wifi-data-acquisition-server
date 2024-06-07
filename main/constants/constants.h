@@ -62,6 +62,18 @@ static const char *PING_TAG = "ping";
 #define HOST_IP_MAX_LEN 20
 #define PING_TASK_PRIORITY 1
 
+///////////////////////////////// GPS ////////////////////////////////////////////
+
+static const char *GPS_TASK_TAG = "GPS_TASK";
+
+#define TXD_PIN GPIO_NUM_17
+#define RXD_PIN GPIO_NUM_16
+
+#define UART UART_NUM_2
+
+#define RX_BUF_SIZE 1024
+//#define RX_BUF_SIZE 256
+
 //////////////////////////// wifi station AP mode (unused) /////////////////////////
 
 // Wi-Fi AP Variables (Currently Unused in default app)

@@ -8,9 +8,10 @@
 #include "wifi_connect.h"
 #include "cJSON.h"
 
-static const int wifi_scan_cmd_id = 10;
-static const int wifi_conn_cmd_id = 20;
-static const int ping_cmd_id = 30;
+#define wifi_scan_cmd_id  10
+#define wifi_conn_cmd_id  20
+#define ping_cmd_id 30
+#define gps_location_id 40
 
 // This function uses the user-defined cmd_dict to determine an equivalent (int) for the received str
 int number_for_key(char *key);

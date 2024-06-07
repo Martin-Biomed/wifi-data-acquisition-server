@@ -6,6 +6,7 @@
 #include "generic_funcs.h"
 #include "service_router.h"
 #include "utf8.h"
+#include "gps_library.h"
 
 #include "esp_wifi.h"
 #include "esp_log.h"
@@ -91,6 +92,9 @@ void send_wifi_scan_request(char** wifi_scan_str_arr, int ap_num);
 void send_wifi_conn_status(int connection_status);
 
 void send_ping_result(int ping_status, char* host);
+
+// This function updates the value of (characteristic_value[0]) with the static char array defined in the GPS Task scope
+void send_gps_location(void);
 
 // Updates the om_mbuf value with the string(s) that we want to send over the GATT Read characteristic
 int send_response_to_usr(int access_points, int input_cmd, int rc, struct ble_gatt_access_ctxt *ctxt);
