@@ -26,7 +26,7 @@ char* get_host_ip(void);
 // This function is used for synchronisation between (ping) and (wifi_connect)
 int get_ping_resolved_status(void);
 
-// The following functions are registered in the (esp_ping_callbacks_t) structure as calback functions
+// The following functions are registered in the (esp_ping_callbacks_t) structure as callback functions
 
 // This function is called when the ping to the selected host has succeeded
 void cmd_ping_on_ping_success(esp_ping_handle_t hdl, void *args);

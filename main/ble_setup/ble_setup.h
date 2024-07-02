@@ -52,7 +52,7 @@ Partition Table Config:
 // Refer to the following link for info on how to use Wi-Fi and BLE simultaneously: 
 // https://docs.espressif.com/projects/esp-faq/en/latest/software-framework/ble-bt.html
 
-// Please note, the BLE GATT Service will only be viewable under these conditions because BLE is not a "normal" BT device:
+// Please note, the BLE GATT Service will only be viewable under these conditions because devices using BLE are not a "normal" BT device:
 //  - iPhone: Download the nRF Connect Application
 //  - PC: Download the Bluetooth LE Explorer App (https://apps.microsoft.com/detail/9N0ZTKF1QD98?hl=en-kh&gl=KH)
 

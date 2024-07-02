@@ -17,8 +17,10 @@
 
 #include "freertos/FreeRTOS.h"
 
+// This function is used to retrieve the IP address that is allocated to the ESP32 in case of successful connection to a DHCP server
 char* get_esp32_ip_str(void);
 
+// This function is used to retrieve the Subnet mask that is allocated to the ESP32 in case of successful connection to a DHCP server
 char* get_esp32_netmask(void);
 
 // This event handler is invoked for Wi-Fi AP connections and IP address allocation changes

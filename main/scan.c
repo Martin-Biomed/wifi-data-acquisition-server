@@ -10,7 +10,6 @@
 /*
     This example shows how to scan for available set of APs.
 */
-//#include <math.h>
 #include "esp_wifi.h"
 
 // In this script, we do not change the value of the Master Logging level

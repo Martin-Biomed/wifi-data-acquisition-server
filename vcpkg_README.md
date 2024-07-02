@@ -1,7 +1,7 @@
 
 ## Introduction
 
-This project uses the vcpkg library and package manager to download and use C libraries.
+This project has used the vcpkg library and package manager to download and use some C libraries.
 
 ## Setup
 
@@ -18,3 +18,9 @@ For the initial setup of (vcpkg) in VSCode, refer to: https://github.com/Microso
 
 - To install a library using (vcpkg), use: **.\vcpkg\vcpkg install [package name]:x64-windows**
     - **Note:** If CMake has been configured as a VSCode extension, (vcpkg) may install a different version for the Windows terminal.
+    - The libraries will be stored in the project's local source-controlled "vcpkg" directory.
+
+## Additional Mods to VCPKG
+
+Because the VCPKG directory has been included as part of this project repo, I have manually removed the .Git files to avoid 
+dealing with multiple Git "Heads" when uploading to the remote repo.

@@ -11,7 +11,7 @@ idf_component_register(SRCS
                         "ping/ping.c"
                         "gps_library/gps_library.c"
                     INCLUDE_DIRS 
-                        "C:/Users/marti/Documents/git_repos/ESP-IDF/v5.1.2"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/ESP-IDF_Libraries/v5.1.2"
                         "${CMAKE_CURRENT_SOURCE_DIR}/wifi_scan"
                         "${CMAKE_CURRENT_SOURCE_DIR}/generic_funcs"
                         "${CMAKE_CURRENT_SOURCE_DIR}/wifi_setup"

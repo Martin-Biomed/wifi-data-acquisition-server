@@ -4,14 +4,10 @@
 #include "constants.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-//#include "freertos/queue.h"
-//#include "esp_err.h"
 #include "esp_log.h"
 #include "esp_system.h"
 
 #include "driver/gpio.h"
-//#include "rom/gpio.h"
-//#include "cmd.h"
 
 #include "driver/uart.h"
 
@@ -36,7 +32,12 @@ void init_uart(void);
 // This task periodically receives data from the UART Rx Pin
 void gps_task(void *arg);
 
+// GPS data is not provided as a neat set of values. Often a reply will contain multiple instances of the same measurement data.
+// This is a result of updating RX_BUF_SIZE bytes every time we read Rx data, so it will need to be parsed at the app that is requesting this data.
 char* get_latest_gps_data(void);
+
+// Note: The NEO-6M GPS Module takes a very long time to synchronise with the available satellites (1 hour or more). During this time, the user will not be 
+// able to get the GPS position of the ESP32. Additionally, sometimes rapid movement of the GPS receiver may result in the signal temporarily being lost.
 
 #endif
 

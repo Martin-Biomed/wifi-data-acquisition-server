@@ -12,6 +12,7 @@
 #include "constants.h"
 
 // Code taken from: https://gist.github.com/stanislaw/f62c36823242c4ffea1b
+// Note: This snippet of code was not explictly subject to a License agreement, therefore no License is included
 
 int32_t utf8_is_continuation(char c);
 int32_t utf8_validate(char * s);

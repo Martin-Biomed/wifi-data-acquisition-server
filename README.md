@@ -12,8 +12,8 @@ The ESP-IDF files downloaded through VSCode are stored in the "v5.1.2" folder.
 
 Note: To build using the VSCode extension, ensure that the "CMakeLists.txt" file is pointing to the location of the "v5.1.2" folder.
 
-Project Locations: Projects created using ESP-IDF create their own folder structure. I have chosen to save the
-projects at the same directory level as the "v5.1.2" folder.
+Project Locations: Projects created using ESP-IDF create their own folder structure. I have chosen to save the "v5.1.2" folder within
+the Git project to source control the default ESP-IDF libraries I am using.
 
 ## How to use ESP-IDF with VSCode
 
@@ -25,10 +25,10 @@ VS Code is only used for development purposes, project builds are done in the as
 To create new projects:
 
 1. Navigate to the VSCode Extension Pane on the LHS of the screen. Select the (ESP-IDF: Explorer) icon
-2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Commands
+2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Command Tab on the Left-Side of the IDE
 3. Select "New Project Wizard" and fill out the options as appropriate.
 
-Note: All libraries in the "example" projects are contained in the "v5.1.2" folder, these default libraries are not part of the individual project.
+Note: All libraries in the "example" projects are contained in the "v5.1.2" folder.
 
 To compile and build the projects:
 
