@@ -1,41 +1,110 @@
 
-# Set-up Steps for ESP-IDF
+# About this Project
 
-## Intro
-ESP-IDF is the software development environment (and framework) created by Espressif to 
-interface with the ESP32-S2 chip developed by Espressif. 
+This ESP32 project was developed mostly as a practice project to explore many of the capabilities available using a basic ESP32 DEV Kit Board.
 
-ESP-IDF projects are built using CMake. Each project build configuration is contained in `CMakeLists.txt` files that provide set of directives and instructions describing the project's source files and targets (executable, library, or both).
+Some of the functionality explored in this project included:
+- Establishing the ESP32 as a Bluetooth Low Energy (BLE) Server
+- Exploring the Wi-Fi connectivity capabilities of the ESP32
+- Interfacing with the NEO-6M GPS receiver directly using UART
 
-## ESP-IDF Package Location
-The ESP-IDF files downloaded through VSCode are stored in the "v5.1.2" folder.
+## Related Software Projects
 
-Note: To build using the VSCode extension, ensure that the "CMakeLists.txt" file is pointing to the location of the "v5.1.2" folder.
+### BLE GATT Client Application
 
-Project Locations: Projects created using ESP-IDF create their own folder structure. I have chosen to save the "v5.1.2" folder within
-the Git project to source control the default ESP-IDF libraries I am using.
+Link to App: https://github.com/Martin-Biomed/ble_client_for_windows
 
-## How to use ESP-IDF with VSCode
+ A separate application was developed that can directly publish strings to selected BLE GATT Characteristics (ignores available BLE Profiles and Services). 
 
-The following steps document what was done to configure the development environment in VS Code.
-VS Code is only used for development purposes, project builds are done in the associated Docker Container.
+Typically, a user is expected to provide two BLE GATT Characteristic UUIDs (One for sending data and another for receiving the response from the BLE server) when sending a message.
 
-1. Install as per: https://github.com/espressif/vscode-esp-idf-extension/blob/master/docs/tutorial/install.md
+This application has only been tested with 128-bit representations of UUIDs, as they can be sent as plain strings (while the 16-bit UUIDs typically have to be sent as raw bytes to be received by BLE Servers).
 
-To create new projects:
+The BLE GATT Client App offers two modes of operation:
 
-1. Navigate to the VSCode Extension Pane on the LHS of the screen. Select the (ESP-IDF: Explorer) icon
-2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Command Tab on the Left-Side of the IDE
-3. Select "New Project Wizard" and fill out the options as appropriate.
+- **Manual Mode:** The user can utilise the GUI to configure a message to be sent to a selected BLE Server device (by providing a BLE GATT Characteristic for publishing messages and another Characteristic for reading the response).
 
-Note: All libraries in the "example" projects are contained in the "v5.1.2" folder.
+- **API Mode:** A RESTful API server is hosted on localhost (on a selected port) that allows a user to programmatically configure the same fields that are available in manual mode.
 
-To compile and build the projects:
+### Wi-Fi ESP32 Data Acquisition Companion App
 
-1. Navigate to VSCode Extension Pane on the LHS of the screen. Select the (ESP-IDF: Explorer) icon
-2. When this Extension is selected, this will open up the (ESP-IDF: Explorer) Commands
-3. Choose "Select Serial Port", and use the corresponding COM number for your ESP device.
-4. Choose "Set Espressif Target" and select the ESP-IDF project that you want to load to the ESP32
-5. Select "Build" to prepare your code to be flashed to the ESP32
-6. Select "Flash" to load the software to the ESP32 (ensure UART is selected).
-7. Select "Monitor" to open up the terminal screen to display the serial output from the ESP32.
+Link to App: https://github.com/Martin-Biomed/wifi-data-acquisition-server-companion-app
+
+A companion application for this project was developed using Java to expand on the information that can be provided by the ESP32 running this project.
+
+For example:
+- From GPS sentences, we can extract the address of where the ESP32 is located.
+- We can attempt to find the vendor/manufacturer of a Wi-Fi AP based on its MAC Address
+- We can try to calculate the distance between the ESP32 and the Wi-Fi AP.
+
+
+## Available Functions
+
+Ultimately, this project provides a BLE GATT interface so the ESP32 can be asked to execute certain functions, like:
+
+- **Wi-Fi Scan:** The ESP32 scans available Wi-Fi Access Points (the max number of APs is defined in "constants.h"). This process is actually a passive scan of APs, which means the ESP32 itself does not send probe requests to DHCP servers to receive data.
+
+- **Wi-Fi AP Connect:** The ESP32 checks if it is able to connect to a Wi-Fi AP. The code treats the AP as if it were a DHCP server
+and waits to be allocated an IP address. If this process is successful, the AP credentials are stored in memory, and the ESP32 disconnects from the AP.
+
+    - **Pinging Hosts:** A previous Wi-Fi AP connection is required before the ESP32 can ping a host (which can be provided as a hostname or IP address [without subnet mask]). A ping involves executing a single ICMP echo request to the selected endpoint.
+
+- **GPS Location:** The ESP32 is meant to be connected to a NEO-6M GPS Receiver Module for this project (Refer to the "Documentation" directory of this project for wiring instructions). The ESP32 returns raw GPS sentences (Note: The ESP32 will return GPS sentences even when the GPS receiver has not found a reliable reference to surrounding GPS satelites).
+
+### Input/Return Message Format
+
+The ESP32 is using JSON-formatted messages to receive and output information using the BLE GATT Publish/Subscribe methodology.
+
+Refer to the project "documentation" directory for more info on how each of the supported functions expects to receive the corresponding command from the BLE Client to execute the function.
+
+## ESP-IDF VSCode Usage
+
+This project is intended to be tied to the VSCode IDE, specifically the ESP-IDF extension.
+
+This didn't necessarily have to be the case, because ESP-IDF also offers ad-hoc containerised building tools, but for simplicity, none of these options have been explored as part of this project.
+
+Refer to the (esp-idf_README.md) file for more info.
+
+### Associated Project Directories
+
+**partition_table:** This directory is auto-generated by using the ESP-IDF extension SDK Configuration Editor to configure specific ESP32 options. It is required to successfully build the project and should not be directly modified.
+
+**build:** This directory is auto-generated by using the ESP-IDF extension "Compile" and "Build" options to generate an uploadable binary. The contents of this directory will be overwritten when the project code changes and the code is built again. By default, this directory is in the (.gitignore) list.
+ 
+## BLE GATT Usage
+
+The ESP32 uses a BLE GATT Event Bus to receive requests to execute functions. Most of the configuration for the BLE communications is done within the "ble_setup" module.
+
+### BLE GATT Background Info
+
+One of the mechanisms for using BLE for messaging is to use a GATT publish/subscribe method.
+
+It is recommended that potential users become acquainted with basic BLE concepts, fortunately there are good resources online, like: 
+https://learn.adafruit.com/introduction-to-bluetooth-low-energy/introduction
+
+### Generic Access Profile (GAP) Device-to-Device Connections
+
+The GAP device-to-device connection is the first step in establishing communications (using this BLE methodology). 
+
+The ESP32 advertises its device BLE characteristics (like its Device Name and MAC Address). This allows BLE-enabled devices to detect and establish a connection to the ESP32.
+
+### Generic ATTribute Profile (GATT) Services
+
+The ESP32 functions as a GATT Server, where a client can then subscribe/publish to available Services offered by the ESP32.
+
+GATT Services are organised in a hierarchal order:
+
+- **Profile (Highest Level):** Defines a collection of Services. In this project, there is only a single (implictly-defined) Profile.
+
+- **Services:** Contains a group of characteristics, and are more commonly used if different types of functions are available from the same BLE server. This project only uses a single service.
+
+- **Characteristics:** The lowest level concept in GATT transactions. Each characteristic is defined by a UUID. The UUID is commonly provided as a 16-bit reference of 128-bit reference. 
+
+    -  This project uses two separate BLE GATT characteristics:
+
+        - **READ Characteristic (0xFEF4):** This characteristic is where the ESP32 reads any input from BLE clients. A BLE client can publish commands to this GATT characteristic to control the execution of the ESP32 functions (Refer to the project "documentation" directory for more info).
+
+        - **WRITE Characteristic (0xDEAD):** This characteristic is where the ESP32 publishes any data that is meant to be accessible to an external BLE client.
+
+**Note:** The (128-bit) representation of the BLE Characteristic UUID is the (16-bit) Byte UUID superimposed over the standard Bluetooth Base UUID (Refer to the project "documentation" directory for more info).
+

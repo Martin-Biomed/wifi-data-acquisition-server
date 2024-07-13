@@ -11,17 +11,26 @@
 
 #include "driver/uart.h"
 
-// We need to determine the GPIO that maps to the specific Signals we are interested in.
-// To view the list of available signals for our compile target device (in our case its "esp32"), navigate to the respective (gpio_sig_map.h)
-// Located in: {ESP-IDF Version}/esp-idf/components/soc/{compile target device}/include/soc/gpio_sig_map.h
+/*
+ We need to determine the GPIO that maps to the specific Signals we are interested in.
+ To view the list of available signals for our compile target device (in our case its "esp32"), navigate to the respective (gpio_sig_map.h)
+ Located in: {ESP-IDF Version}/esp-idf/components/soc/{compile target device}/include/soc/gpio_sig_map.h
 
-// For this example, we are interested in: U2RXD_IN_IDX, U2TXD_OUT_IDX
-// Refer to the Manual that can be found here: https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
-// Refer to Section 4.9 (Peripheral Signal List) and locate where the signal of interest is mapped on Section 4.10 (IO_MUX Pad List)
+ For this example, we are interested in: U2RXD_IN_IDX, U2TXD_OUT_IDX
+ Refer to the Manual that can be found here: https://www.espressif.com/sites/default/files/documentation/esp32_technical_reference_manual_en.pdf
+ Refer to Section 4.9 (Peripheral Signal List) and locate where the signal of interest is mapped on Section 4.10 (IO_MUX Pad List)
 
-// In our case, the board pinout can be found here: https://www.circuitstate.com/pinouts/doit-esp32-devkit-v1-wifi-development-board-pinout-diagram-and-reference/
+ Based on the outcome of our analysis, you determine the (IDF_TARGET) when compiling the code.
+ There are many options for choosing our compilation target (like esp32, esp32s2, esp32c6, etc.), which change the GPIO signal 
+ mapping (this is a feature to accomodate a variety of possible ESP32 Breakout board pinouts).
 
-// Note: This mapping is not guaranteed, and it may be worth checking the different compile target (gpio_sig_map.h) files for each individual case.
+ These compilation targets can be selected by navigating to the ESP-IDF VSCode Extension Tab, and selecting "Set Espressif target".
+
+ In our case, the board pinout can be found here: https://www.circuitstate.com/pinouts/doit-esp32-devkit-v1-wifi-development-board-pinout-diagram-and-reference/
+The standard "esp32" compilation target (IDF_TARGET) was enough for our specific board and selected GPIO pins.
+
+Note: This mapping is not guaranteed, and it may be worth checking the different compile target (gpio_sig_map.h) files for each individual compilation target.
+*/
 
 #define portTICK_RATE_MS 1
 
